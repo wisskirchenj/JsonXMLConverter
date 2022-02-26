@@ -26,7 +26,7 @@ public interface DataStructureElement {
     String[] toXML();
 
     /**
-     * convert data structure to lines of a Json-obejct.
+     * convert data structure into lines of a Json-object.
      * @return Json-format - lines
      */
     String[] toJson();

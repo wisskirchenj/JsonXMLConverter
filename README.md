@@ -11,4 +11,4 @@ tasks will be included.
 
 ## Progress
 
-
+26.02.22 Stage 1 completed with tests - a lot new Mockito in Controller-class :-)

@@ -4,17 +4,19 @@ package converter.model;
  * converts an abstract data structure attribute:value into text-lines in XML-format.
  */
 public class XMLGenerator {
-    DataStructureElement data;
+    private static final String INDENT = "  ";
 
-    public XMLGenerator(DataStructureElement dataStructure) {
-        data = dataStructure;
-    }
     /**
-     * entry point to start generation of Json-format
-     * @return lines of Json-Code
+     * entry point to start generation of XML-format
+     * @return lines of XML-Code
      */
-    public String generate() {
-        return "to be implemented";
+    public String generate(DataStructureElement data) {
+        StringBuilder stringBuilder = new StringBuilder();
+        String[] xmlLines = data.toXML();
+        for (String line : xmlLines) {
+            stringBuilder.append(line);
+        }
+        return stringBuilder.toString();
     }
 }
 

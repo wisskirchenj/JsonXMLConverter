@@ -30,14 +30,15 @@ public class LeafElement implements DataStructureElement {
     @Override
     public String[] toXML() {
         String line = value.equals(NULL) ? String.format("<%s/>", attribute) :
-                String.format("<%1$s>%2$s<%1$s/>", attribute, value);
+                String.format("<%1$s>%2$s</%1$s>", attribute, value);
         return new String[] {line};
     }
 
     @Override
     public String[] toJson() {
         String line = value.equals(NULL) ? String.format("\"%s\": null", attribute) :
-                String.format("\"%s\": \"%s\"", attribute, value);
+                String.format("\"%s\": \"%s\"", attribute,
+                        value.replaceAll("\"", "\\\\\""));
         return new String[] {line};
     }
 

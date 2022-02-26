@@ -8,13 +8,10 @@ import java.util.regex.Pattern;
  * data structures of attribute:value.
  */
 public class XMLParser {
-
-    // static to avoid compiling for any instance.
-    private static final Pattern PAIRED_XML_ROOT_PATTERN = Pattern.compile("<(\\w+)>(.*)</\\1>");
-    private static final Pattern XML_ELEMENT_WITH_TAGS_PATTERN
-            = Pattern.compile("(\\s*<(\\w+)>.*</\\2>\\s*|\\s*<\\w+/>\\s*)+");
-
     private final String input;
+    private final Pattern PAIRED_XML_ROOT_PATTERN = Pattern.compile("<(\\w+)>(.*)</\\1>");
+    private final Pattern XML_ELEMENT_WITH_TAGS_PATTERN
+            = Pattern.compile("(\\s*<(\\w+)>.*</\\2>\\s*|\\s*<\\w+/>\\s*)+");
 
     public XMLParser(String userInput) {
         input = userInput;

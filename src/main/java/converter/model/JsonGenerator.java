@@ -8,17 +8,11 @@ public class JsonGenerator {
     private static final String START_LINE = "{\n";
     private static final String END_LINE = "\n}\n";
 
-    DataStructureElement data;
-
-    public JsonGenerator(DataStructureElement dataStructure) {
-        data = dataStructure;
-    }
-
     /**
      * entry point to start generation of Json-format
      * @return lines of Json-Code
      */
-    public String generate() {
+    public String generate(DataStructureElement data) {
         StringBuilder stringBuilder = new StringBuilder(START_LINE);
         String[] jsonLines = data.toJson();
         for (String line : jsonLines) {

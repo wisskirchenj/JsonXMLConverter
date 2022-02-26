@@ -5,13 +5,10 @@ package converter.view;
  */
 public class PrinterUI {
 
-    private final String output;
-
-    public PrinterUI(String output) {
-        this.output = output;
+    public PrinterUI() {
     }
 
-    public void print() {
+    public void print(String output) {
         System.out.println(output);
     }
 }
