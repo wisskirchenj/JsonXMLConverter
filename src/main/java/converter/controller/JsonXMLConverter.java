@@ -10,18 +10,21 @@ import converter.view.ScannerUI;
  */
 public class JsonXMLConverter {
 
+    // model and view classes as fields - so they can be mocked in unit test :-)
     private ScannerUI scannerUI = new ScannerUI();
     private PrinterUI printerUI = new PrinterUI();
     private JsonGenerator jsonGenerator = new JsonGenerator();
     private XMLGenerator xmlGenerator = new XMLGenerator();
 
     /**
-     * entry point for main application. Converts and prints (one line of) user input.
+     * entry point for main application. Converts and prints user input.
+     * For project stage 2 inout is taken from a text file test.txt - so this is done
+     * here too: src/test/resources/data/test.txt
      */
     public void run() {
         // comment next line in - for check in JetBrains:
-        // String userInput = new ScannerUI().getUserInput(ScannerUI.NO_PROMPT).trim();
-        String userInput = scannerUI.getUserInput("Enter XML or Json to convert (one line):").trim();
+        String userInput = new ScannerUI().getUserInputFromFile().trim();
+        //String userInput = scannerUI.getUserInput("Enter XML or Json to convert (one line):").trim();
         String output;
 
         try {
