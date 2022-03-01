@@ -5,9 +5,6 @@ package converter.view;
  */
 public class PrinterUI {
 
-    public PrinterUI() {
-    }
-
     public void print(String output) {
         System.out.println(output);
     }

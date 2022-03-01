@@ -1,5 +1,8 @@
 package converter.view;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.Scanner;
 
@@ -23,5 +26,15 @@ public class ScannerUI {
             System.out.println(promptText);
         }
         return scanner.nextLine();
+    }
+
+    public String getUserInputFromFile(){
+        try {
+            return new String(Files.readAllBytes(
+                    Paths.get("src/test/resources/data/test.txt")));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

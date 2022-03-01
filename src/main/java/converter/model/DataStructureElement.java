@@ -18,16 +18,4 @@ public interface DataStructureElement {
      *          or a String in case of a LeafElement.
      */
     Object getValue();
-
-    /**
-     * convert data structure to lines of XML-code.
-     * @return XML - lines
-     */
-    String[] toXML();
-
-    /**
-     * convert data structure into lines of a Json-object.
-     * @return Json-format - lines
-     */
-    String[] toJson();
 }
