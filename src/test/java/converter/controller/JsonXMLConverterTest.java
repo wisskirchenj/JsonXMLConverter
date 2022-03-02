@@ -43,8 +43,7 @@ class JsonXMLConverterTest {
 
     @Test
     void runInvalid() {
-        when(scannerUI.getUserInput(anyString()))
-                .then((Answer<String>) invocation -> "something invalid");
+        when(scannerUI.getUserInputFromFile()).then((Answer<String>) invocation -> "something invalid");
         converter.run();
         String errorMessageStart = "Json-XML-Parse-Error - Illegal format:";
         verify(printerUI).print(captor.capture());
@@ -54,7 +53,7 @@ class JsonXMLConverterTest {
 
     @Test
     void runValid() {
-        when(scannerUI.getUserInput(anyString()))
+        when(scannerUI.getUserInputFromFile())
                 .then((Answer<String>) invocation -> "{\"tag\":1}");
         when(xmlGenerator.generate(ArgumentMatchers.any())).thenReturn("<tag>1</tag>");
         converter.run();

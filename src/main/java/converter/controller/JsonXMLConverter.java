@@ -23,7 +23,7 @@ public class JsonXMLConverter {
      */
     public void run() {
         // comment next line in - for check in JetBrains:
-        String userInput = new ScannerUI().getUserInputFromFile().trim();
+        String userInput = scannerUI.getUserInputFromFile().trim();
         //String userInput = scannerUI.getUserInput("Enter XML or Json to convert (one line):").trim();
         String output;
 

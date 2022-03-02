@@ -20,7 +20,7 @@ public class JsonParser {
             = Pattern.compile("[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?" );
     private final Pattern SINGLE_BOOLEAN_PATTERN = Pattern.compile("true|false" );
     private final Pattern JSON_ATTRIBUTE_PATTERN = Pattern.compile(
-            "(?s)\"([@,#])(\\w+)\"\\s*:\\s*(\"(.*?[^\\\\])\"|\\S+)\\s*([,}])");
+            "(?s)\"([@,#])(\\w+)\"\\s*:\\s*(\"([^\"]*?[^\\\\])\"|\\S+)\\s*([,}])");
 
     public JsonParser(String userInput) {
         input = userInput;

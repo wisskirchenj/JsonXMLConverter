@@ -64,13 +64,7 @@ class JsonParserTest {
 
     @Test
     void parseInvalidValue() {
-        input = "{\"name\":{\"#name\":1}}";
-        exception = assertThrows(JsonXMLParseException.class, () -> new JsonParser(input).parse());
-        assertEquals("Json parser: unsupported format yet!", exception.getMessage());
         input = "{\"name\":{ \"@att1\":\"val1\", \"#name\":1,}";
-        exception = assertThrows(JsonXMLParseException.class, () -> new JsonParser(input).parse());
-        assertEquals("Json parser: unsupported format yet!", exception.getMessage());
-        input = "{\"name\":{ \"@att1\":\"val1\" \"@att2\":\"val2\", \"#name\":1}}";
         exception = assertThrows(JsonXMLParseException.class, () -> new JsonParser(input).parse());
         assertEquals("Json parser: unsupported format yet!", exception.getMessage());
     }
