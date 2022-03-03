@@ -22,7 +22,7 @@ class JsonXMLConverterTest {
     @Mock
     PrinterUI printerUI;
     @Mock
-    GenericGenerator genericGenerator;
+    JsonGenerator jsonGenerator;
     @Mock
     XMLGenerator xmlGenerator;
 
@@ -83,6 +83,6 @@ class JsonXMLConverterTest {
     void convertInputValidXML() {
         String validXMLInput = "<tag/>";
         converter.convertInput(validXMLInput);
-        verify(genericGenerator, times(1)).generate(any(DataStructureElement.class));
+        verify(jsonGenerator, times(1)).generate(any(DataStructureElement.class));
     }
 }
