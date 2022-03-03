@@ -3,10 +3,9 @@ package converter.model;
 import java.util.List;
 
 /**
- * Class representing a data leaf element with attributes and a possible element value string
- * Thus it represents a paired or unpaired XML-tag with attributes and (possibly empty) content.
- * The String content is accessed by the interface getter getValue(), while the attributes-list
- * is accessed via the additional method getAttributeElements().
+ * Legacy - code... OBSOLETE !
+ * -> will get removed as soon as JsonParser is refactored...
+ * There is no longer a difference between LeafElement and LeafAttributesElements (with attributes)
  */
 public class LeafAttributesElement implements DataStructureElement {
 
@@ -23,6 +22,16 @@ public class LeafAttributesElement implements DataStructureElement {
     @Override
     public String getAttribute() {
         return attribute;
+    }
+
+    @Override
+    public void setAttribute(String attribute) {
+
+    }
+
+    @Override
+    public void addAttributeElement(LeafElement element) {
+
     }
 
     @Override

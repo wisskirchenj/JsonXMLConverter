@@ -30,7 +30,7 @@ class JsonGeneratorTest {
 
     @Test
     void generateEmptyLeaf() {
-        LeafElement leafElement = new LeafElement("attribute", "");
+        LeafElement leafElement = new LeafElement("attribute", null);
         String jsonText = "\"attribute\": null";
         String output = jsonGenerator.generate(leafElement);
         assertTrue(output.contains(jsonText));
@@ -40,11 +40,9 @@ class JsonGeneratorTest {
 
     @Test
     void generateAttributesLeaf() {
-        List<LeafElement> attributeElements = new ArrayList<>();
-        attributeElements.add(new LeafElement("attrib1", "value1"));
-        attributeElements.add(new LeafElement("attrib2", "value2"));
-        LeafAttributesElement element = new LeafAttributesElement("tag",
-                attributeElements,"value");
+        LeafElement element = new LeafElement("tag", "value");
+        element.addAttributeElement(new LeafElement("attrib1", "value1"));
+        element.addAttributeElement(new LeafElement("attrib2", "value2"));
         String output = jsonGenerator.generate(element);
         System.out.println(output);
         assertTrue(output.contains("\"tag\": {"));
@@ -57,11 +55,9 @@ class JsonGeneratorTest {
 
     @Test
     void generateEmptyAttributesLeaf() {
-        List<LeafElement> attributeElements = new ArrayList<>();
-        attributeElements.add(new LeafElement("attrib1", "value1"));
-        attributeElements.add(new LeafElement("attrib2", "value2"));
-        LeafAttributesElement element = new LeafAttributesElement("tag",
-                attributeElements,"");
+        LeafElement element = new LeafElement("tag",null);
+        element.addAttributeElement(new LeafElement("attrib1", "value1"));
+        element.addAttributeElement(new LeafElement("attrib2", "value2"));
         String output = jsonGenerator.generate(element);
         System.out.println(output);
         assertTrue(output.contains("\"tag\": {"));

@@ -10,11 +10,13 @@ import converter.view.ScannerUI;
  */
 public class JsonXMLConverter {
 
+    private static final int OUTPUT_MODE = 3; // 1 = Generic, 2 = XML, else = Json
     // model and view classes as fields - so they can be mocked in unit test :-)
     private ScannerUI scannerUI = new ScannerUI();
     private PrinterUI printerUI = new PrinterUI();
     private JsonGenerator jsonGenerator = new JsonGenerator();
     private XMLGenerator xmlGenerator = new XMLGenerator();
+    private GenericGenerator genericGenerator = new GenericGenerator();
 
     /**
      * entry point for main application. Converts and prints user input.
@@ -47,8 +49,18 @@ public class JsonXMLConverter {
         }
         switch (userInput.charAt(0)) {
             case '<' -> {
-                DataStructureElement dataStructure = new XMLParser(userInput).parse();
-                return jsonGenerator.generate(dataStructure);
+                DataStructureElement dataStructure = new XMLParser().parse(userInput);
+                switch (OUTPUT_MODE) {
+                    case 1 -> {
+                        return genericGenerator.generate(dataStructure);
+                    }
+                    case 2 -> {
+                        return xmlGenerator.generate(dataStructure);
+                    }
+                    default -> {
+                        return jsonGenerator.generate(dataStructure);
+                    }
+                }
             }
             case '{' -> {
                 DataStructureElement dataStructure = new JsonParser(userInput).parse();

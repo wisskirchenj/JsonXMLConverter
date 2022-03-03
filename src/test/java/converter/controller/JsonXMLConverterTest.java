@@ -1,9 +1,6 @@
 package converter.controller;
 
-import converter.model.DataStructureElement;
-import converter.model.JsonGenerator;
-import converter.model.JsonXMLParseException;
-import converter.model.XMLGenerator;
+import converter.model.*;
 import converter.view.PrinterUI;
 import converter.view.ScannerUI;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,7 +22,7 @@ class JsonXMLConverterTest {
     @Mock
     PrinterUI printerUI;
     @Mock
-    JsonGenerator jsonGenerator;
+    GenericGenerator genericGenerator;
     @Mock
     XMLGenerator xmlGenerator;
 
@@ -86,6 +83,6 @@ class JsonXMLConverterTest {
     void convertInputValidXML() {
         String validXMLInput = "<tag/>";
         converter.convertInput(validXMLInput);
-        verify(jsonGenerator, times(1)).generate(any(DataStructureElement.class));
+        verify(genericGenerator, times(1)).generate(any(DataStructureElement.class));
     }
 }

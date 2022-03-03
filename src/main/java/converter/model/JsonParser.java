@@ -10,6 +10,8 @@ import java.util.regex.Pattern;
 /**
  * JsonParser objects contain all logic to parse string input in Json-format into abstract nested
  * data structures of attribute:value.
+ * TO BE REFACTORED in next stage(s) !!! It uses the obsolete LeafAttributesElement - class
+ * and also cannot handle well recursive structures yet...
  */
 public class JsonParser {
     private final String input;
@@ -55,19 +57,17 @@ public class JsonParser {
     /**
      * this private method has gotten a bit messy, because the parsing of nested
      * Json equivalent structures to XML-elements with attributes
-     * (paired, unpaired, different Json data types ..) is complicated
+     * (paired, unpaired, different Json data types ...) is complicated
      *      -> SHOULD BE REFACTORED FOR MAINTAINABILITY...
      * @param attribute the root attribute for the nested element -  as matched by the regexp
      * @param value the string which may (!) contain the remaining entries for this element
-     * @return a generic generic key - attributes - value LeafAttributesElement, if this can be parsed
+     * @return a generic key - attributes - value LeafAttributesElement, if this can be parsed
      *         or null if not - then other parsing continues in caller (or format-Exception).
      */
     private LeafAttributesElement parseForLeafAttributesElement(String attribute, String value) {
         Matcher matcher = JSON_ATTRIBUTE_PATTERN.matcher(value);
         Iterator<MatchResult> matchesIterator = matcher.results().iterator();
-        /* if (!matchesIterator.hasNext()) {
-            //return null; in future stages
-        }*/
+
         List<LeafElement> attributeElements = new ArrayList<>();
         MatchResult result = null;
         String attributeValue= null;
