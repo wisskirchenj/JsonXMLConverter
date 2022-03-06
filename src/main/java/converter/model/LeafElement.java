@@ -34,6 +34,10 @@ public class LeafElement implements DataStructureElement {
         return value;
     }
 
+    public void setValue(String value) {
+        this.value = value;
+    }
+
     @Override
     public void setAttribute(String attribute) {
         this.attribute = attribute;
@@ -50,9 +54,5 @@ public class LeafElement implements DataStructureElement {
     @Override
     public List<LeafElement> getAttributeElements() {
         return attributeElements;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
     }
 }

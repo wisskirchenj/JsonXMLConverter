@@ -15,7 +15,15 @@ public interface DataStructureElement {
 
     String getAttribute();
 
+    void setAttribute(String attribute);
+
     List<LeafElement> getAttributeElements();
+
+    /**
+     * adds a LeafElement representing an attribute-value pair to the attributeElements list
+     * @param element a Leafelement to be added to the list attributeElements
+     */
+    void addAttributeElement(LeafElement element);
 
     /**
      * getter vor value of generic type Object. The value is given on construction for LeafElement
@@ -24,12 +32,4 @@ public interface DataStructureElement {
      * @return the value as Object - implementations specify the return type further
      */
     Object getValue();
-
-    void setAttribute(String attribute);
-
-    /**
-     * adds a LeafElement representing an attribute-value pair to the attributeElements list
-     * @param element a Leafelement to be added to the list attributeElements
-     */
-    void addAttributeElement(LeafElement element);
 }

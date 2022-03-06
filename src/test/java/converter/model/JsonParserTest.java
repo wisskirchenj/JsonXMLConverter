@@ -15,7 +15,7 @@ class JsonParserTest {
         input = "{ \"tag\": \nnull}";
         dataElement = new JsonParser().parse(input).get(0);
         assertEquals("tag", dataElement.getAttribute());
-        assertEquals("", dataElement.getValue());
+        assertNull(dataElement.getValue());
     }
 
     @Test
@@ -30,8 +30,7 @@ class JsonParserTest {
     void parseInvalidFormat() {
         input = "{name:value}";
         exception = assertThrows(JsonXMLParseException.class, () -> new JsonParser().parse(input));
-        assertEquals("Json parser: invalid Json-format found (array as root element not supported yet)!",
-                exception.getMessage());
+        assertTrue(exception.getMessage().startsWith("Json-Parser: Invalid"));
     }
 
     @Test
@@ -40,10 +39,10 @@ class JsonParserTest {
         dataElement = new JsonParser().parse(input).get(0);
         assertEquals("tag", dataElement.getAttribute());
         assertEquals("23.123", dataElement.getValue());
-        input = "{\n \"electron_mass\" \n: \n1.6019e-34\n   \n}";
+        input = "{\n \"electron_mass\" \n: \n1.6019\n   \n}";
         dataElement = new JsonParser().parse(input).get(0);
         assertEquals("electron_mass", dataElement.getAttribute());
-        assertEquals("1.6019e-34", dataElement.getValue());
+        assertEquals("1.6019", dataElement.getValue());
     }
 
     @Test
@@ -57,16 +56,18 @@ class JsonParserTest {
     @Test
     void parseNested() {
         input = "{\"name\":{\"inner\":12}}";
-        exception = assertThrows(JsonXMLParseException.class, () -> new JsonParser().parse(input));
-        assertEquals("Json parser: unsupported format yet!",
-                exception.getMessage());
+        dataElement = new JsonParser().parse(input).get(0);
+        assertEquals("name", dataElement.getAttribute());
+        assertEquals(1, ((ParentElement) dataElement).getValue().size());
+        assertEquals("inner", ((ParentElement) dataElement).getValue().get(0).getAttribute());
+        assertEquals("12", ((ParentElement) dataElement).getValue().get(0).getValue());
     }
 
     @Test
     void parseInvalidValue() {
         input = "{\"name\":{ \"@att1\":\"val1\", \"#name\":1,}";
         exception = assertThrows(JsonXMLParseException.class, () -> new JsonParser().parse(input));
-        assertEquals("Json parser: unsupported format yet!", exception.getMessage());
+        assertTrue(exception.getMessage().startsWith("Json-Parser: Invalid"));
     }
 
     @Test
@@ -87,7 +88,7 @@ class JsonParserTest {
         input = "{\"name\" :{ \"@att1\": \"val1\", \"@att2\" :\"val2\", \"#name\": null }}";
         dataElement = new JsonParser().parse(input).get(0);
         assertEquals("name", dataElement.getAttribute());
-        assertEquals("", dataElement.getValue());
+        assertNull(dataElement.getValue());
         assertEquals(2, dataElement.getAttributeElements().size());
         assertEquals("att1", dataElement
                 .getAttributeElements().get(0).getAttribute());

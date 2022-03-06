@@ -46,13 +46,13 @@ public class JsonParser {
     /**
      * central recursive method of this parser, that does the scanning of the child list of a
      * Json object (i.e. anything embraced). Method is called, after the attribute of the parent has
-     * ben parsed before and a parent element created, which is geiven as parameter and to be filled
+     * been parsed before and a parent element created, which is given as parameter and to be filled
      * with values by this method.
      * @param parent the parent element, the object list to be parsed belongs to
      * @param input the data string to be parsed
      */
     private void parseObjectsList(ParentElement parent, String input) {
-        List<String> tokens = tokenizeInput(input);
+        Deque<String> tokens = tokenizeInput(input);
         if (parent.getAttribute() != null) { // is only null for the rootElement
             // find and assign possible attributes to this parent element
             parseListForAttributes(parent, tokens);
@@ -96,7 +96,7 @@ public class JsonParser {
     /**
      * method gets an arbitrary object and attempts to parse it for a leaf element structure,
      * which may either be a key:value pair with value of data type string, number, boolean or null
-     * or a nested object, where all child-elements satusfy an attribute-value pattern, which
+     * or a nested object, where all child-elements satisfy an attribute-value pattern, which
      * then represents an XML-element with attributes and (possibly empty) value.
      * @param token the string data of this parent object
      * @return the created leaf object with attribute set - or null, if the objects value is nested
@@ -129,9 +129,9 @@ public class JsonParser {
             throw new JsonXMLParseException("Json-Parser: Invalid format found!");
         }
         LeafElement leafElement = new LeafElement(matcher.group(1), null);
-        List<String> tokens= tokenizeInput(matcher.group(2));
+        Deque<String> tokens= tokenizeInput(matcher.group(2));
         if (parseListForAttributes(leafElement, tokens)) {
-            leafElement.setValue(parseTokenForLeafElement(tokens.get(0)).getValue());
+            leafElement.setValue(parseTokenForLeafElement(tokens.poll()).getValue());
             return leafElement;
         }
         return null;
@@ -142,19 +142,19 @@ public class JsonParser {
      * If this structure is found, all tokens are removed and only the object_value is offered as single
      * new element into the queue.
      * @param element the data structure element, that consists of the content of this tokensQueue
-     * @param tokensList list of tokens to be parsed for attribute structure
-     * @return true, if the tokens list matches a valid single (!) XML attributes pattern
+     * @param tokensQueue queue of tokens to be parsed for attribute structure
+     * @return true, if the tokens queue matches a valid single (!) XML attributes pattern
      */
-    private boolean parseListForAttributes(DataStructureElement element, List<String> tokensList) {
+    private boolean parseListForAttributes(DataStructureElement element, Deque<String> tokensQueue) {
 
         String valueKey = String.format("\"#%s\"", element.getAttribute());
-        if (isValidAttributesList(tokensList, valueKey)) {
-            return moveAttributesToElement(element, tokensList);
+        if (isValidAttributesList(tokensQueue, valueKey)) {
+            return moveAttributesToElement(element, (LinkedList<String>) tokensQueue);
         } else {
-            repairChildList(tokensList);
+            repairChildList((LinkedList<String>) tokensQueue);
             // empty child elements counts as empty value with key = tag_name
-            if (tokensList.isEmpty()) {
-                tokensList.add("\"" + element.getAttribute() +"\" :\"\"");
+            if (tokensQueue.isEmpty()) {
+                tokensQueue.offer("\"" + element.getAttribute() +"\" :\"\"");
                 return true;
             }
         }
@@ -162,14 +162,14 @@ public class JsonParser {
     }
 
     /**
-     * this methods is called, if the child-list does NOT fully match the attributes-value
-     * syntax. It applies some of the rules given by the specification, that attribute-marked
+     * this method is called, if the child-list does NOT fully match the attributes-value
+     * syntax. It applies some rules given by the specification, that attribute-marked
      * tags are modified to normal child elements, if the whole syntax does not match.
-     * also in this case no two child-attributes with same name are wllowed.
+     * also in this case no two child-attributes with same name are allowed.
      * in this case, the one is taken without "@" or "#"...
      * @param tokensList list of tokens after the negative attribute match -> the list is modified !
      */
-    private void repairChildList(List<String> tokensList) {
+    private void repairChildList(LinkedList<String> tokensList) {
         Set<String> keySet = new HashSet<>();
         ListIterator<String> iterator = tokensList.listIterator(tokensList.size());
         while (iterator.hasPrevious()) {
@@ -192,16 +192,16 @@ public class JsonParser {
     }
 
     /**
-     * this method is called, if the chilod-list does match a valid attributes and
-     * value structure of an XML-element. In this case all the sttributes are added to the
+     * this method is called, if the child-list does match a valid attributes and
+     * value structure of an XML-element. In this case all the attributes are added to the
      * given data structure element's attributesList.
      * @param element a data structure element, where the attributes are added.
-     * @param tokensList the tokens list, taht matches to attributes key-value pairs and
+     * @param tokensList the tokens list, that matches to attributes key-value pairs and
      *                   the element value itself.
      * @return true, if the value of the element "#tag_name" is a single string and can
      *          thus be processed further into a LeafElement, false if value is nested itself.
      */
-    private boolean moveAttributesToElement(DataStructureElement element, List<String> tokensList) {
+    private boolean moveAttributesToElement(DataStructureElement element, LinkedList<String> tokensList) {
 
         Iterator<String> iterator = tokensList.iterator();
         String valueToken = null;
@@ -238,12 +238,12 @@ public class JsonParser {
      * XML-structure with attributes and value. To be this, all child-elements must either
      * be valid key:string-value pairs for attributes and start with "@" or be the one and
      * only value-attribute, that must have a key "#<tag_name>".
-     * @param tokensList the tokens collection to be parsed
-     * @param valueKey the value-key for this XML-element ("#<tagname>")
+     * @param tokensList the token's collection to be parsed
+     * @param valueKey the value-key for this XML-element ("#<tag_name>")
      * @return true, if the child-list matches the attributes structure (with possibly nested value)
      *         false else
      */
-    private boolean isValidAttributesList(List<String> tokensList, String valueKey) {
+    private boolean isValidAttributesList(Deque<String> tokensList, String valueKey) {
         boolean isAttributesList = true;
         boolean valueKeyFound = false;
         for (String token : tokensList) {
@@ -263,22 +263,30 @@ public class JsonParser {
     /**
      * entry point for a rather complicated parsing of a string, that comprises all data of an
      * arbitrary Json-object (even the root-element in first call) into a list of tokens, that
-     * precisely contain the data of one child-element. It has a subcall to a method matching one next token.
+     * precisely contain the data of one child-element. It has a sub call to a method matching one next token.
      * @param input the input string containing all object's data
-     * @return an Array-Decque of the tokens
+     * @return an Array-Deque of the tokens
      */
-    private List<String> tokenizeInput(String input) {
-        List<String> tokens = new ArrayList<>();
+    private Deque<String> tokenizeInput(String input) {
+        Deque<String> tokens = new LinkedList<>();
         int position = 0;
         String token;
         do {
             token = getNextToken(input.substring(position));
             position += token.length() + 1;
-            tokens.add(token.trim());
+            tokens.offer(token.trim());
         } while (position < input.length());
         return tokens;
     }
 
+    /**
+     * low level parse-logic, where one token of the input-string is parsed and returned.
+     * A token is either a "key":value pair, separated by end of text or ',' - or it is
+     * a nested structure, which is identified by counting how many open braces are closed again
+     * and delimited again by ',' or text end.
+     * @param text the text where the token is taken from the beginning
+     * @return the token that exactly matches one Json-element of the list.
+     */
     private String getNextToken(String text) {
         int end = text.indexOf('{');
         if (end < 0 || end > text.indexOf(',')) {
