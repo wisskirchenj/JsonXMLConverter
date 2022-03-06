@@ -12,7 +12,7 @@ import java.util.List;
  */
 public class JsonXMLConverter {
 
-    private static final int OUTPUT_MODE = 2; // 1 = Generic, 2 = XML, else = Json
+    //private static final int OUTPUT_MODE = 2; // 1 = Generic, 2 = XML, else = Json
     // model and view classes as fields - so they can be mocked in unit test :-)
     private ScannerUI scannerUI = new ScannerUI();
     private PrinterUI printerUI = new PrinterUI();
@@ -52,20 +52,18 @@ public class JsonXMLConverter {
         switch (userInput.charAt(0)) {
             case '<' -> {
                 DataStructureElement dataStructure = new XMLParser().parse(userInput);
-                return generateOutput(dataStructure);
+                return jsonGenerator.generate(dataStructure);
             }
             case '{' -> {
-                List<DataStructureElement> dataList = new JsonParser().parse(userInput);
-                StringBuilder stringBuilder = new StringBuilder();
-                dataList.forEach(data -> stringBuilder.append(generateOutput(data)));
-                return stringBuilder.toString();
+                DataStructureElement dataStructure = new JsonParser().parse(userInput);
+                return xmlGenerator.generate(dataStructure);
             }
             default -> throw new JsonXMLParseException("Input is neither valid XML nor Json," +
                     " invalid first non-whitespace character!");
         }
     }
 
-    private String generateOutput(DataStructureElement dataStructure) {
+   /* private String generateOutput(DataStructureElement dataStructure) {
         switch (OUTPUT_MODE) {
             case 1 -> {
                 return genericGenerator.generate(dataStructure);
@@ -77,5 +75,5 @@ public class JsonXMLConverter {
                 return jsonGenerator.generate(dataStructure);
             }
         }
-    }
+    }*/
 }

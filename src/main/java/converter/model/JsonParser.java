@@ -32,7 +32,7 @@ public class JsonParser {
      * results are stored in model objects
      * @return the parsed data as abstract DataStructureElement
      */
-    public List<DataStructureElement> parse(String input) {
+    public DataStructureElement parse(String input) {
         if (!input.endsWith("}")) {
             throw new JsonXMLParseException(
                     "Json parser: invalid Json-format found (array as root element not supported yet)!");
@@ -40,7 +40,11 @@ public class JsonParser {
         ParentElement rootElement = new ParentElement();
         // cut off enclosing braces and whitespace and parse
         parseObjectsList(rootElement, input.substring(1, input.length() - 1).trim());
-        return rootElement.getValue();
+        if (rootElement.getValue().size() == 1) {
+            return rootElement.getValue().get(0);
+        }
+        rootElement.setAttribute("root");
+        return rootElement;
     }
 
     /**

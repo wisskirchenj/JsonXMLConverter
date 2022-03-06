@@ -13,7 +13,7 @@ class JsonParserTest {
     @Test
     void parseNull() {
         input = "{ \"tag\": \nnull}";
-        dataElement = new JsonParser().parse(input).get(0);
+        dataElement = new JsonParser().parse(input);
         assertEquals("tag", dataElement.getAttribute());
         assertNull(dataElement.getValue());
     }
@@ -21,7 +21,7 @@ class JsonParserTest {
     @Test
     void parseStringValue() {
         input = "{\n \"tag\" \n: \n\"some text\" \n   \n}";
-        dataElement = new JsonParser().parse(input).get(0);
+        dataElement = new JsonParser().parse(input);
         assertEquals("tag", dataElement.getAttribute());
         assertEquals("some text", dataElement.getValue());
     }
@@ -36,11 +36,11 @@ class JsonParserTest {
     @Test
     void parseNumberValue() {
         input = "{\n \"tag\" \n: \n23.123 \n   \n}";
-        dataElement = new JsonParser().parse(input).get(0);
+        dataElement = new JsonParser().parse(input);
         assertEquals("tag", dataElement.getAttribute());
         assertEquals("23.123", dataElement.getValue());
         input = "{\n \"electron_mass\" \n: \n1.6019\n   \n}";
-        dataElement = new JsonParser().parse(input).get(0);
+        dataElement = new JsonParser().parse(input);
         assertEquals("electron_mass", dataElement.getAttribute());
         assertEquals("1.6019", dataElement.getValue());
     }
@@ -48,7 +48,7 @@ class JsonParserTest {
     @Test
     void parseBooleanValue() {
         input = "{\"tag\":false}";
-        dataElement = new JsonParser().parse(input).get(0);
+        dataElement = new JsonParser().parse(input);
         assertEquals("tag", dataElement.getAttribute());
         assertEquals("false", dataElement.getValue());
     }
@@ -56,7 +56,7 @@ class JsonParserTest {
     @Test
     void parseNested() {
         input = "{\"name\":{\"inner\":12}}";
-        dataElement = new JsonParser().parse(input).get(0);
+        dataElement = new JsonParser().parse(input);
         assertEquals("name", dataElement.getAttribute());
         assertEquals(1, ((ParentElement) dataElement).getValue().size());
         assertEquals("inner", ((ParentElement) dataElement).getValue().get(0).getAttribute());
@@ -73,7 +73,7 @@ class JsonParserTest {
     @Test
     void parseAttributesElement() {
         input = "{\"name\" :{ \"@att1\": \"val1\", \"@att2\" :\"val2\", \"#name\":\"1.71\"}}";
-        dataElement = new JsonParser().parse(input).get(0);
+        dataElement = new JsonParser().parse(input);
         assertEquals("name", dataElement.getAttribute());
         assertEquals("1.71", dataElement.getValue());
         assertEquals(2, dataElement.getAttributeElements().size());
@@ -86,7 +86,7 @@ class JsonParserTest {
     @Test
     void parseEmptyAttributesElement() {
         input = "{\"name\" :{ \"@att1\": \"val1\", \"@att2\" :\"val2\", \"#name\": null }}";
-        dataElement = new JsonParser().parse(input).get(0);
+        dataElement = new JsonParser().parse(input);
         assertEquals("name", dataElement.getAttribute());
         assertNull(dataElement.getValue());
         assertEquals(2, dataElement.getAttributeElements().size());

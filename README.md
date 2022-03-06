@@ -18,3 +18,6 @@ tasks will be included.
 03.03.22 Stage 3 completed with tests - full XML parsing and new generator
 
 05.03.22 Stage 4 completed with tests - elaborate (complicated specified) Json-Parser
+
+06.03.22 Stage 5 completed with tests - full XML to Json and back functionality plus some
+Topic-Tasks on generic programming and polymorphism

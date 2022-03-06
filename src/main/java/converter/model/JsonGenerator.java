@@ -51,20 +51,24 @@ public class JsonGenerator extends Generator {
                     .append(String.format("\"%s%s\": ", "@", element.getAttribute()));
             builder.append(getLeafValueString(element.getValue()));
         }
-        if (!(data instanceof LeafElement)) {
-            builder.deleteCharAt(builder.lastIndexOf(",")); // remove last ','
-            builder.append(INDENT.repeat(indentationLevel)).append("}\n");
-        }
     }
 
     @Override
     protected void generateEndOfParentAttribute(DataStructureElement data, int indentationLevel) {
-        builder.append(INDENT.repeat(indentationLevel)).append("{\n");
+        if (data.getAttributeElements() != null) {
+            builder.append(INDENT.repeat(indentationLevel + 1))
+                    .append(String.format("\"%s%s\": {\n", "#", data.getAttribute()));
+        } else {
+            builder.append("{\n");
+        }
     }
 
     @Override
     protected void generateEndOfParent(DataStructureElement data, int indentationLevel) {
         builder.deleteCharAt(builder.lastIndexOf(",")); // remove last ','
+        if (data.getAttributeElements() != null) {
+            builder.append(INDENT.repeat(indentationLevel + 1)).append("}\n");
+        }
         builder.append(INDENT.repeat(indentationLevel)).append("},\n");
     }
 

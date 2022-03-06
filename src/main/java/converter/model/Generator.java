@@ -40,7 +40,8 @@ public abstract class Generator {
         generateEndOfParentAttribute(data, indentationLevel);
         List<DataStructureElement> values = ((ParentElement) data).getValue();
         for (DataStructureElement value : values) {
-            recursiveGenerate(value, indentationLevel + 1);
+            recursiveGenerate(value, data.getAttributeElements() == null ? indentationLevel + 1
+                    : indentationLevel + 2);
         }
         generateEndOfParent(data, indentationLevel);
     }
