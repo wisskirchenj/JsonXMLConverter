@@ -5,12 +5,14 @@ import converter.model.*;
 import converter.view.PrinterUI;
 import converter.view.ScannerUI;
 
+import java.util.List;
+
 /**
  * Controller Class of the Json-XML-Converter
  */
 public class JsonXMLConverter {
 
-    private static final int OUTPUT_MODE = 3; // 1 = Generic, 2 = XML, else = Json
+    private static final int OUTPUT_MODE = 2; // 1 = Generic, 2 = XML, else = Json
     // model and view classes as fields - so they can be mocked in unit test :-)
     private ScannerUI scannerUI = new ScannerUI();
     private PrinterUI printerUI = new PrinterUI();
@@ -24,7 +26,7 @@ public class JsonXMLConverter {
      * here too: src/test/resources/data/test.txt
      */
     public void run() {
-        // comment next line in - for check in JetBrains:
+
         String userInput = scannerUI.getUserInputFromFile().trim();
         //String userInput = scannerUI.getUserInput("Enter XML or Json to convert (one line):").trim();
         String output;
@@ -50,24 +52,30 @@ public class JsonXMLConverter {
         switch (userInput.charAt(0)) {
             case '<' -> {
                 DataStructureElement dataStructure = new XMLParser().parse(userInput);
-                switch (OUTPUT_MODE) {
-                    case 1 -> {
-                        return genericGenerator.generate(dataStructure);
-                    }
-                    case 2 -> {
-                        return xmlGenerator.generate(dataStructure);
-                    }
-                    default -> {
-                        return jsonGenerator.generate(dataStructure);
-                    }
-                }
+                return generateOutput(dataStructure);
             }
             case '{' -> {
-                DataStructureElement dataStructure = new JsonParser(userInput).parse();
-                return xmlGenerator.generate(dataStructure);
+                List<DataStructureElement> dataList = new JsonParser().parse(userInput);
+                StringBuilder stringBuilder = new StringBuilder();
+                dataList.forEach(data -> stringBuilder.append(generateOutput(data)));
+                return stringBuilder.toString();
             }
             default -> throw new JsonXMLParseException("Input is neither valid XML nor Json," +
                     " invalid first non-whitespace character!");
+        }
+    }
+
+    private String generateOutput(DataStructureElement dataStructure) {
+        switch (OUTPUT_MODE) {
+            case 1 -> {
+                return genericGenerator.generate(dataStructure);
+            }
+            case 2 -> {
+                return xmlGenerator.generate(dataStructure);
+            }
+            default -> {
+                return jsonGenerator.generate(dataStructure);
+            }
         }
     }
 }

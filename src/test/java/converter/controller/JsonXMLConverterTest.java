@@ -11,7 +11,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -21,8 +20,6 @@ class JsonXMLConverterTest {
     ScannerUI scannerUI;
     @Mock
     PrinterUI printerUI;
-    @Mock
-    JsonGenerator jsonGenerator;
     @Mock
     XMLGenerator xmlGenerator;
 
@@ -83,6 +80,6 @@ class JsonXMLConverterTest {
     void convertInputValidXML() {
         String validXMLInput = "<tag/>";
         converter.convertInput(validXMLInput);
-        verify(jsonGenerator, times(1)).generate(any(DataStructureElement.class));
+        verify(xmlGenerator, times(1)).generate(any(DataStructureElement.class));
     }
 }

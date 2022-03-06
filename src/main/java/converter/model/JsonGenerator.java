@@ -69,8 +69,7 @@ public class JsonGenerator extends Generator {
     }
 
     private String getLeafValueString(String value) {
-        return value == null ? "null,\n" : String.format("\"%s\",%n",
-                value.replaceAll("\"", "\\\\\""));
+        return value == null ? "null,\n" : String.format("\"%s\",%n", value);
     }
 
     /**

@@ -13,7 +13,7 @@ public class LeafElement implements DataStructureElement {
 
     private String attribute= null;
     private List<LeafElement> attributeElements;
-    private final String value;
+    private String value;
 
     public LeafElement(String attribute, String value) {
         this.attribute = attribute;
@@ -50,5 +50,9 @@ public class LeafElement implements DataStructureElement {
     @Override
     public List<LeafElement> getAttributeElements() {
         return attributeElements;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
     }
 }
