@@ -6,21 +6,6 @@ package converter.model;
 public class XMLGenerator extends Generator {
 
     @Override
-    protected String getFinalText() {
-        return "";
-    }
-
-    @Override
-    protected String getInitialText() {
-        return "";
-    }
-
-    @Override
-    protected int getInitialIndentLevel() {
-        return 0;
-    }
-
-    @Override
     protected void generateLeafValue(LeafElement data, int indentationLevel) {
         builder.append(getLeafValueString(data.getAttribute(), data.getValue()));
     }
@@ -31,12 +16,12 @@ public class XMLGenerator extends Generator {
     }
 
     @Override
-    protected void generateEndOfParentAttribute(DataStructureElement data, int indentationLevel) {
+    protected void generateEndOfParentAttribute(ParentElement data, int indentationLevel) {
         builder.append(">\n");
     }
 
     @Override
-    protected void generateEndOfParent(DataStructureElement data, int indentationLevel) {
+    protected void generateEndOfParent(ParentElement data, int indentationLevel) {
         builder.append(INDENT.repeat(indentationLevel))
                 .append(String.format("</%s>%n", data.getAttribute()));
     }

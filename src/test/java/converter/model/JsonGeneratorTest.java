@@ -66,4 +66,25 @@ class JsonGeneratorTest {
         assertTrue(output.startsWith("{"));
         assertTrue(output.endsWith("}\n"));
     }
+
+    @Test
+    void generateArray() {
+        ParentElement parent = new ParentElement();
+        parent.setAttribute("parent");
+        parent.addAttributeElement(new LeafElement("parentattrib", "value"));
+        parent.addValueElement(new LeafElement("data", "first"));
+        ParentElement child = new ParentElement();
+        child.setAttribute("data");
+        child.addValueElement(new LeafElement("grandchild1", "Peter"));
+        child.addValueElement(new LeafElement("grandchild2", "John"));
+        parent.addValueElement(child);
+        LeafElement leafElement = new LeafElement("data", null);
+        leafElement.addAttributeElement(new LeafElement("someatt", ""));
+        parent.addValueElement(leafElement);
+        String output = jsonGenerator.generate(parent);
+        System.out.println(output);
+        assertTrue(output.contains("\"#parent\": ["));
+        assertTrue(output.contains("\"@someatt\": \"\","));
+        assertTrue(output.contains("grandchild2\": \"John"));
+    }
 }
