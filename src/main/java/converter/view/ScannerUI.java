@@ -28,10 +28,10 @@ public class ScannerUI {
         return scanner.nextLine();
     }
 
-    public String getUserInputFromFile(){
+    public String getUserInputFromFile(String path){
         try {
             return new String(Files.readAllBytes(
-                    Paths.get("src/test/resources/data/test.txt")));
+                    Paths.get(path)));
         } catch (IOException e) {
             e.printStackTrace();
         }

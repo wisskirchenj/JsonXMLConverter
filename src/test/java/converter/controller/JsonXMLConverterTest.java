@@ -39,8 +39,9 @@ class JsonXMLConverterTest {
 
     @Test
     void runInvalid() {
-        when(scannerUI.getUserInputFromFile()).then((Answer<String>) invocation -> "something invalid");
-        converter.run();
+        when(scannerUI.getUserInputFromFile(anyString()))
+                .then((Answer<String>) invocation -> "something invalid");
+        converter.run(new String[] {"0", ""});
         String errorMessageStart = "Json-XML-Parse-Error - Illegal format:";
         verify(printerUI).print(captor.capture());
         assertTrue(captor.getValue().startsWith(errorMessageStart));
@@ -49,10 +50,10 @@ class JsonXMLConverterTest {
 
     @Test
     void runValid() {
-        when(scannerUI.getUserInputFromFile())
+        when(scannerUI.getUserInputFromFile(anyString()))
                 .then((Answer<String>) invocation -> "{\"tag\":1}");
         when(xmlGenerator.generate(ArgumentMatchers.any())).thenReturn("<tag>1</tag>");
-        converter.run();
+        converter.run(new String[] {"0", ""});
         verify(printerUI).print(captor.capture());
         assertTrue(captor.getValue().startsWith("<tag>"));
     }
@@ -60,28 +61,30 @@ class JsonXMLConverterTest {
     @Test
     void convertInputInvalid() {
         String invalidInput = "something invalid";
-        exception = assertThrows(JsonXMLParseException.class, () -> converter.convertInput(invalidInput));
+        exception = assertThrows(JsonXMLParseException.class,
+                () -> converter.convertInput(invalidInput, 0));
         assertEquals("Input is neither valid XML nor Json," +
                 " invalid first non-whitespace character!", exception.getMessage());
     }
 
     @Test
     void convertInputEmpty() {
-        exception = assertThrows(JsonXMLParseException.class, () -> converter.convertInput(""));
+        exception = assertThrows(JsonXMLParseException.class,
+                () -> converter.convertInput("", 0));
         assertEquals("Empty input!", exception.getMessage());
     }
 
     @Test
     void convertInputValidJson() {
         String validJsonInput = "{\"a\":1}";
-        converter.convertInput(validJsonInput);
+        converter.convertInput(validJsonInput, 0);
         verify(xmlGenerator, times(1)).generate(any(DataStructureElement.class));
     }
 
     @Test
     void convertInputValidXML() {
         String validXMLInput = "<tag/>";
-        converter.convertInput(validXMLInput);
+        converter.convertInput(validXMLInput, 0);
         verify(jsonGenerator, times(1)).generate(any(DataStructureElement.class));
     }
 }
