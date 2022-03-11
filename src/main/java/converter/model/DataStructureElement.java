@@ -21,7 +21,7 @@ public interface DataStructureElement {
 
     /**
      * adds a LeafElement representing an attribute-value pair to the attributeElements list
-     * @param element a Leafelement to be added to the list attributeElements
+     * @param element a LeafElement to be added to the list attributeElements
      */
     void addAttributeElement(LeafElement element);
 

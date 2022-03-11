@@ -99,6 +99,21 @@ class XMLParserTest {
                 .get(1).getValue());
     }
 
+
+    @Test
+    void parsePairedWithSingleQuoteAttributes() {
+        input = "<tag att1='val1' att2=\"val2\" > te\"xt </tag>";
+        assertDoesNotThrow(() -> new XMLParser().parse(input));
+        parsedElement = new XMLParser().parse(input);
+        assertEquals("tag", parsedElement.getAttribute());
+        assertEquals(" te\"xt ", parsedElement.getValue());
+        assertEquals(2, parsedElement.getAttributeElements().size());
+        assertEquals("att1",  parsedElement.getAttributeElements()
+                .get(0).getAttribute());
+        assertEquals("val2", parsedElement.getAttributeElements()
+                .get(1).getValue());
+    }
+
     @Test
     void parseEmptyPairedWithAttributes() {
         input = "<tag att1=\"val1\" att2=\"val2\" />";

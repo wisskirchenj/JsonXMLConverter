@@ -8,6 +8,6 @@ import converter.controller.JsonXMLConverter;
 public class MainApplication {
 
     public static void main(String[] args) {
-        new JsonXMLConverter().run();
+        new JsonXMLConverter().run(args);
     }
 }

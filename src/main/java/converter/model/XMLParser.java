@@ -11,10 +11,10 @@ import java.util.regex.Pattern;
  */
 public class XMLParser {
 
-    private final Pattern XML_UNPAIRED_ELEMENT_PATTERN = Pattern.compile("(?s)<([^>]+)/>\\s*");
-    private final Pattern XML_PAIRED_ELEMENT_PATTERN = Pattern.compile("(?s)<(([^>]+)[^>]*)>?(.*?)</\\2>\\s*");
-    private final Pattern XML_TAG_PATTERN = Pattern.compile("(\\w+)\\s*(.*?)\\s*");
-    private final Pattern XML_ATTRIBUTE_PATTERN = Pattern.compile("(\\w+)\\s*=\\s*\"(.*?[^\\\\])\"\\s*");
+    private final Pattern xmlPrologPattern = Pattern.compile("(?s)<\\?.*?\\?>\\s*");
+    private final Pattern xmlTagPattern = Pattern.compile("(\\w+)\\s*(.*?)\\s*");
+    private final Pattern xmlAttributePattern = Pattern.compile("(\\w+)\\s*=\\s*[\"'](.*?)[\"']\\s*");
+    private final XMLTokenizer tokenizer = new XMLTokenizer();
 
     /**
      * central parse method entry point for this class, that is also called recursively with
@@ -26,47 +26,96 @@ public class XMLParser {
      */
     public DataStructureElement parse(String input) {
 
-        Matcher matcher = XML_UNPAIRED_ELEMENT_PATTERN.matcher(input);
-        if (matcher.find() && matcher.start() == 0) {
+        input = cutProlog(input);
+
+        String nextElementToken = tokenizer.getNextToken(input);
+        LeafElement parsedData = parseForUnpairedLeaf(nextElementToken);
+        if (parsedData != null) {
             // first recursion base case
-            LeafElement parsedData = new LeafElement(null);
-            parseAttributes(parsedData, matcher.group(1));
             return parsedData;
         }
 
-        matcher = XML_PAIRED_ELEMENT_PATTERN.matcher(input);
-        if (!matcher.find() || matcher.start() != 0) {
-            throw new JsonXMLParseException("XML parser: invalid format found!");
+        Matcher matcher = tokenizer.getPairedPattern().matcher(nextElementToken);
+        if (!matcher.matches()) {
+            throw new JsonXMLParseException("cannot happen :-)");
         }
         String attribute = matcher.group(1);
         String value = matcher.group(3);
 
-        // second recursion base case
         if (!isNested(value)) {
-            LeafElement parsedData = new LeafElement(value);
-            parseAttributes(parsedData, attribute);
-            return parsedData;
+            // second recursion base case
+            return parseForPairedLeaf(attribute, value);
         }
 
+        // inside the following method is the reduction step of the recursion
+        return parseForParent(attribute, value);
+    }
+
+    /**
+     * if XML-input has a prolog tag <?something?> at the beginning (which is the only place, where the
+     * XML-syntax allows it), this is removed from the input by this method.
+     * @param input the XML-text to parse
+     * @return a XML-prolog free text.
+     */
+    private String cutProlog(String input) {
+        Matcher matcher = xmlPrologPattern.matcher(input);
+        if (matcher.find() && matcher.start() == 0) {
+            return input.substring(matcher.end()).trim();
+        }
+        return input;
+    }
+
+    /**
+     * parse input value text to match the value of a paired nested XML-element (a ParentElement)
+     * @param attribute already parsed attribute name given by caller
+     * @param value value-text to be parsed
+     * @return the created and filled ParentElement, if text started with a match for a paired
+     * XML-element. If not, an exception is thrown.
+     */
+    private DataStructureElement parseForParent(String attribute, String value) {
         ParentElement parsedData = new ParentElement();
         parseAttributes(parsedData, attribute);
 
         value = value.trim();
         int indexShift = 0; // keep track, that whole input is matched
         do {
-            matcher = XML_UNPAIRED_ELEMENT_PATTERN.matcher(value);
-            if (!matcher.find(indexShift) || matcher.start() != indexShift) {
-                matcher = XML_PAIRED_ELEMENT_PATTERN.matcher(value);
-                if (!matcher.find(indexShift) || matcher.start() != indexShift) {
-                    throw new JsonXMLParseException("XML parser: invalid format found!");
-                }
-            }
-            // reduction step of recursion
-            parsedData.addValueElement(parse(value.substring(matcher.start(), matcher.end()).trim()));
-            indexShift = matcher.end();
-        } while (matcher.end() < value.length());
+            String nextElementToken = tokenizer.getNextToken(value.substring(indexShift));
 
-       return parsedData;
+            // reduction step of recursion
+            parsedData.addValueElement(parse(nextElementToken.trim()));
+            indexShift += nextElementToken.length();
+        } while (indexShift < value.length());
+
+        return parsedData;
+    }
+
+    /**
+     * parse input text to see, if value text matches with a paired XML-element (i.e. not nested)
+     * @param attribute already parsed attribute name given by caller
+     * @param value value-text to be parsed
+     * @return th created and filled LeafElement, if text started with a match for a paired
+     * XML-element, null else.
+     */
+    private DataStructureElement parseForPairedLeaf(String attribute, String value) {
+        LeafElement parsedData = new LeafElement(value);
+        parseAttributes(parsedData, attribute);
+        return parsedData;
+    }
+
+    /**
+     * parse input text to see, if text starts with a unpaired XML-leafElement (i.e. not nested)
+     * @param input text to be parsed
+     * @return th created and filled LeafElement, if text started with a match for an unpaired
+     * XML-element, null else.
+     */
+    private LeafElement parseForUnpairedLeaf(String input) {
+        Matcher matcher = tokenizer.getUnpairedPattern().matcher(input);
+        if (matcher.find() && matcher.start() == 0) {
+            LeafElement parsedData = new LeafElement(null);
+            parseAttributes(parsedData, matcher.group(1));
+            return parsedData;
+        }
+        return null;
     }
 
     /**
@@ -76,7 +125,7 @@ public class XMLParser {
      * @param attribute the string, that is to be parsed
      */
     protected void parseAttributes(DataStructureElement dataStructure, String attribute) {
-        Matcher matcher = XML_TAG_PATTERN.matcher(attribute);
+        Matcher matcher = xmlTagPattern.matcher(attribute);
         if (!matcher.matches()) {
             throw new JsonXMLParseException("XML parser: unsupported format yet!");
         }
@@ -85,7 +134,7 @@ public class XMLParser {
         if (attributeList == null) {
             return;
         }
-        matcher = XML_ATTRIBUTE_PATTERN.matcher(attribute);
+        matcher = xmlAttributePattern.matcher(attribute);
         while (matcher.find()) {
             dataStructure.addAttributeElement(new LeafElement(matcher.group(1), matcher.group(2)));
         }

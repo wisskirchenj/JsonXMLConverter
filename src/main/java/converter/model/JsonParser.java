@@ -12,20 +12,20 @@ import java.util.regex.Pattern;
  */
 public class JsonParser {
 
-    private final Pattern SINGLE_ROOT_PATTERN
+    private final Pattern singleRootPattern
             = Pattern.compile("(?s)\"([.\\w]*)\"\\s*:\\s*\\{(.*)}\\s*");
-    private final Pattern SINGLE_NON_EMPTY_STRING_PATTERN
+    private final Pattern singleNonEmptyStringPattern
             = Pattern.compile("(?s)\"([.\\w]*)\"\\s*:\\s*\"(.*?[^\\\\])\"");
-    private final Pattern SINGLE_EMPTY_STRING_PATTERN = Pattern.compile("(?s)\"(\\w*)\"\\s*:\\s*\"\"");
-    private final Pattern SINGLE_NUMBER_PATTERN
+    private final Pattern singleEmptyStringPattern = Pattern.compile("(?s)\"(\\w*)\"\\s*:\\s*\"\"");
+    private final Pattern singleNumberPattern
             = Pattern.compile("(?s)\"([.\\w]*)\"\\s*:\\s*([-+]?[0-9]*\\.?[0-9]+)");
-    private final Pattern SINGLE_BOOLEAN_PATTERN
+    private final Pattern singleBooleanPattern
             = Pattern.compile("(?s)\"([.\\w]*)\"\\s*:\\s*(true|false)");
-    private final Pattern SINGLE_NULL_PATTERN
+    private final Pattern singleNullPattern
             = Pattern.compile("(?s)\"([.\\w]*)\"\\s*:\\s*null");
-    private final Pattern JSON_ATTRIBUTE_PATTERN
-            = Pattern.compile("(?s)\"[@#]([.\\w]+)\"\\s*:\\s*(\"([^\"]*?)\"|[^\\s{]+)");
-    private final Pattern JSON_CHILD_TOKEN_PATTERN = Pattern.compile("(?s)\"([@#]?[.\\w]*)\".*");
+    private final Pattern jsonAttributePattern
+            = Pattern.compile("(?s)\"[@#]([.\\w]+)\"\\s*:\\s*(\"([^\"]*?)\"|[^\\s{]+|[{\\[]\\s*[}\\]])");
+    private final Pattern jsonChildTokenPattern = Pattern.compile("(?s)\"([@#]?[.\\w]*)\".*");
 
     /**
      * entry point for controller to parse the (complete) user input.
@@ -56,12 +56,12 @@ public class JsonParser {
      * @param input the data string to be parsed
      */
     private void parseObjectsList(ParentElement parent, String input) {
-        Deque<String> tokens = tokenizeInput(input);
+        Tokenizer tokenizer = new JsonTokenizer(input);
         if (parent.getAttribute() != null) { // is only null for the rootElement
             // find and assign possible attributes to this parent element
-            parseListForAttributes(parent, tokens);
+            parseListForAttributes(parent, tokenizer);
         }
-        for (String token : tokens) {
+        for (String token : tokenizer.asQueue()) {
 
             // recursion base step
             LeafElement parsedLeaf = parseTokenForLeafElement(token);
@@ -88,7 +88,7 @@ public class JsonParser {
      * @return the created parent object with attribute set.
      */
     private ParentElement parseParentObject(String token) {
-        Matcher matcher = SINGLE_ROOT_PATTERN.matcher(token);
+        Matcher matcher = singleRootPattern.matcher(token);
         if (!matcher.matches()) {
             throw new JsonXMLParseException("Json-Parser: Invalid Format");
         }
@@ -107,35 +107,35 @@ public class JsonParser {
      */
     private LeafElement parseTokenForLeafElement(String token) {
 
-        Matcher matcher = SINGLE_NON_EMPTY_STRING_PATTERN.matcher(token);
+        Matcher matcher = singleNonEmptyStringPattern.matcher(token);
         if (matcher.matches()) {
             return new LeafElement(matcher.group(1), matcher.group(2));
         }
-        matcher = SINGLE_EMPTY_STRING_PATTERN.matcher(token);
+        matcher = singleEmptyStringPattern.matcher(token);
         if (matcher.matches()) {
             return new LeafElement(matcher.group(1), "");
         }
-        matcher = SINGLE_NULL_PATTERN.matcher(token);
+        matcher = singleNullPattern.matcher(token);
         if (matcher.matches()) {
             return new LeafElement(matcher.group(1), null);
         }
-        matcher = SINGLE_BOOLEAN_PATTERN.matcher(token);
+        matcher = singleBooleanPattern.matcher(token);
         if (matcher.matches()) {
             return new LeafElement(matcher.group(1), matcher.group(2));
         }
-        matcher = SINGLE_NUMBER_PATTERN.matcher(token);
+        matcher = singleNumberPattern.matcher(token);
         if (matcher.matches()) {
             return new LeafElement(matcher.group(1), matcher.group(2));
         }
 
-        matcher = SINGLE_ROOT_PATTERN.matcher(token);
+        matcher = singleRootPattern.matcher(token);
         if (!matcher.matches()) {
             throw new JsonXMLParseException("Json-Parser: Invalid format found!");
         }
         LeafElement leafElement = new LeafElement(matcher.group(1), null);
-        Deque<String> tokens= tokenizeInput(matcher.group(2));
-        if (parseListForAttributes(leafElement, tokens)) {
-            leafElement.setValue(parseTokenForLeafElement(tokens.poll()).getValue());
+        Tokenizer tokenizer = new JsonTokenizer(matcher.group(2));
+        if (parseListForAttributes(leafElement, tokenizer)) {
+            leafElement.setValue(parseTokenForLeafElement(tokenizer.asList().get(0)).getValue());
             return leafElement;
         }
         return null;
@@ -146,19 +146,19 @@ public class JsonParser {
      * If this structure is found, all tokens are removed and only the object_value is offered as single
      * new element into the queue.
      * @param element the data structure element, that consists of the content of this tokensQueue
-     * @param tokensQueue queue of tokens to be parsed for attribute structure
+     * @param tokenizer a tokenizer object, that offers the tokens
      * @return true, if the tokens queue matches a valid single (!) XML attributes pattern
      */
-    private boolean parseListForAttributes(DataStructureElement element, Deque<String> tokensQueue) {
+    private boolean parseListForAttributes(DataStructureElement element, Tokenizer tokenizer) {
 
         String valueKey = String.format("\"#%s\"", element.getAttribute());
-        if (isValidAttributesList(tokensQueue, valueKey)) {
-            return moveAttributesToElement(element, (LinkedList<String>) tokensQueue);
+        if (isValidAttributesList(tokenizer.asList(), valueKey)) {
+            return moveAttributesToElement(element, tokenizer.asList());
         } else {
-            repairChildList((LinkedList<String>) tokensQueue);
+            repairChildList(tokenizer.asList());
             // empty child elements counts as empty value with key = tag_name
-            if (tokensQueue.isEmpty()) {
-                tokensQueue.offer("\"" + element.getAttribute() +"\" :\"\"");
+            if (tokenizer.hasNoTokens()) {
+                tokenizer.addToken("\"" + element.getAttribute() +"\" :\"\"");
                 return true;
             }
         }
@@ -173,26 +173,38 @@ public class JsonParser {
      * in this case, the one is taken without "@" or "#"...
      * @param tokensList list of tokens after the negative attribute match -> the list is modified !
      */
-    private void repairChildList(LinkedList<String> tokensList) {
+    private void repairChildList(List<String> tokensList) {
         Set<String> keySet = new HashSet<>();
-        ListIterator<String> iterator = tokensList.listIterator(tokensList.size());
-        while (iterator.hasPrevious()) {
-            String token = iterator.previous();
-            Matcher matcher = JSON_CHILD_TOKEN_PATTERN.matcher(token);
-            if (!matcher.matches() || matcher.group(1).isEmpty() || "@".equals(matcher.group(1)) ||
-                    ("#".equals(matcher.group(1)))) {
-                iterator.remove();
+        List<String> newList = new ArrayList<>();
+
+        ListIterator<String> iterator = tokensList.listIterator();
+        while (iterator.hasNext()) {
+            String token = iterator.next();
+            Matcher matcher = jsonChildTokenPattern.matcher(token);
+            if (!matcher.matches() || matcher.group(1).isEmpty() || matcher.group(1).startsWith("@") ||
+                    matcher.group(1).startsWith("#")) {
                 continue;
             }
-            if (matcher.group(1).startsWith("@") || matcher.group(1).startsWith("#")) {
-                iterator.set("\"" + token.substring(2));
-                if (keySet.contains(matcher.group(1).substring(1))) {
-                    iterator.remove();
-                }
-            } else {
-                keySet.add(matcher.group(1));
+            keySet.add(matcher.group(1));
+        }
+
+        iterator = tokensList.listIterator();
+        while (iterator.hasNext()) {
+            String token = iterator.next();
+            Matcher matcher = jsonChildTokenPattern.matcher(token);
+            if (!matcher.matches() || matcher.group(1).isEmpty()) {
+                continue;
+            }
+            if (matcher.group(1).length() > 1 && !keySet.contains(matcher.group(1).substring(1)) &&
+                    (matcher.group(1).startsWith("@") || matcher.group(1).startsWith("#"))) {
+                newList.add("\"" + token.substring(2));
+            }
+            if (Character.isLetterOrDigit(matcher.group(1).charAt(0))) {
+                newList.add(token);
             }
         }
+        tokensList.clear();
+        tokensList.addAll(newList);
     }
 
     /**
@@ -205,17 +217,17 @@ public class JsonParser {
      * @return true, if the value of the element "#tag_name" is a single string and can
      *          thus be processed further into a LeafElement, false if value is nested itself.
      */
-    private boolean moveAttributesToElement(DataStructureElement element, LinkedList<String> tokensList) {
+    private boolean moveAttributesToElement(DataStructureElement element, List<String> tokensList) {
 
         Iterator<String> iterator = tokensList.iterator();
         String valueToken = null;
         while (iterator.hasNext()) {
             String token = iterator.next();
             if (token.startsWith("\"@")) {
-                Matcher matcher = JSON_ATTRIBUTE_PATTERN.matcher(token);
+                Matcher matcher = jsonAttributePattern.matcher(token);
                 matcher.matches(); // clear at this point, that it does
                 String attributeValue = matcher.group(3) != null ? matcher.group(3) : matcher.group(2);
-                if (attributeValue.equals("null")) {
+                if (attributeValue.equals("null") || attributeValue.matches("[{\\[]\\s*[}\\]]")) {
                     attributeValue = "";
                 }
                 element.addAttributeElement(new LeafElement(matcher.group(1), attributeValue));
@@ -229,8 +241,8 @@ public class JsonParser {
             }
         }
         if (valueToken.contains("{")) {
-            tokensList.addAll(tokenizeInput(valueToken
-                    .substring(valueToken.indexOf('{')+1, valueToken.lastIndexOf('}')).trim()));
+            tokensList.addAll(new JsonTokenizer(valueToken
+                    .substring(valueToken.indexOf('{')+1, valueToken.lastIndexOf('}')).trim()).asList());
             return false;
         }
         tokensList.set(0, "\"" + valueToken.substring(2));
@@ -247,7 +259,7 @@ public class JsonParser {
      * @return true, if the child-list matches the attributes structure (with possibly nested value)
      *         false else
      */
-    private boolean isValidAttributesList(Deque<String> tokensList, String valueKey) {
+    private boolean isValidAttributesList(List<String> tokensList, String valueKey) {
         boolean isAttributesList = true;
         boolean valueKeyFound = false;
         for (String token : tokensList) {
@@ -255,61 +267,12 @@ public class JsonParser {
                 valueKeyFound = true;
                 continue;
             }
-            Matcher matcher = JSON_ATTRIBUTE_PATTERN.matcher(token);
+            Matcher matcher = jsonAttributePattern.matcher(token);
             if (!matcher.matches()) {
                 isAttributesList = false;
                 break;
             }
         }
         return isAttributesList && valueKeyFound;
-    }
-
-    /**
-     * entry point for a rather complicated parsing of a string, that comprises all data of an
-     * arbitrary Json-object (even the root-element in first call) into a list of tokens, that
-     * precisely contain the data of one child-element. It has a sub call to a method matching one next token.
-     * @param input the input string containing all object's data
-     * @return an Array-Deque of the tokens
-     */
-    private Deque<String> tokenizeInput(String input) {
-        Deque<String> tokens = new LinkedList<>();
-        int position = 0;
-        String token;
-        do {
-            token = getNextToken(input.substring(position));
-            position += token.length() + 1;
-            tokens.offer(token.trim());
-        } while (position < input.length());
-        return tokens;
-    }
-
-    /**
-     * low level parse-logic, where one token of the input-string is parsed and returned.
-     * A token is either a "key":value pair, separated by end of text or ',' - or it is
-     * a nested structure, which is identified by counting how many open braces are closed again
-     * and delimited again by ',' or text end.
-     * @param text the text where the token is taken from the beginning
-     * @return the token that exactly matches one Json-element of the list.
-     */
-    private String getNextToken(String text) {
-        int end = text.indexOf('{');
-        if (end < 0 || end > text.indexOf(',')) {
-            return text.indexOf(',') < 0 ? text : text.substring(0, text.indexOf(','));
-        }
-        int depth = 1;
-        while (++end < text.length() && depth > 0) {
-            if (text.charAt(end) == '{') {
-                depth++;
-            } else if (text.charAt(end) == '}') {
-                depth--;
-            }
-        }
-        if (text.indexOf(',', end) > 0) {
-            return text.substring(0, text.indexOf(',', end));
-        }
-        if (text.indexOf('{', end) > 0 || text.indexOf(':', end) > 0) {
-            throw new JsonXMLParseException("Json-Parser: Invalid format found!");
-        }
-        return text;
     }
 }

@@ -1,7 +1,5 @@
 package converter.model;
 
-import java.util.List;
-
 /**
  * abstract generator, that bundles the recursion functionality of the
  * XML and JSon-Generator - and a third GenericGenerator for project stage 3.
@@ -37,39 +35,64 @@ public abstract class Generator {
             return;
         }
 
-        generateEndOfParentAttribute(data, indentationLevel);
-        List<DataStructureElement> values = ((ParentElement) data).getValue();
-        for (DataStructureElement value : values) {
-            recursiveGenerate(value, data.getAttributeElements() == null ? indentationLevel + 1
-                    : indentationLevel + 2);
+        ParentElement parent = (ParentElement) data;
+        generateEndOfParentAttribute(parent, indentationLevel);
+
+        // generateArray-method to implement Json-abbreviated array format: "[<element-list>]"
+        if (!generateArray(parent, indentationLevel)) {
+            for (DataStructureElement value : parent.getValue()) {
+                recursiveGenerate(value, indentationLevel + 1 + getExtraIndent(parent));
+            }
         }
-        generateEndOfParent(data, indentationLevel);
+
+        generateEndOfParent(parent, indentationLevel);
+    }
+
+    /**
+     * gives subclass generators the opportunity to apply some own indentation logic or
+     * changes for special cases (both is used in derivations...)
+     * @return 1 if data structure has attributes, 0 (the default) else.
+     */
+    protected int getExtraIndent(DataStructureElement data) {
+        //default implementation
+        return 0;
     }
 
     /**
      * Generator-subclasses can start deeper indented (needed for Json)
      * @return initial indentation level
      */
-    protected abstract int getInitialIndentLevel();
+    protected int getInitialIndentLevel() {
+        //default implementation
+        return 0;
+    }
 
     /**
      * Generator-subclasses can specify some starter string (needed for Json: "{\n" )
      * @return the string to append to the StringBuilder
      */
-    protected abstract String getInitialText();
+    protected String getInitialText() {
+        //default implementation
+        return "";
+    }
 
     /**
      * Generator-subclasses can specify some ending string (needed for Json: "}\n" )
      * @return the string to append to the StringBuilder
      */
-    protected abstract String getFinalText();
+    protected  String getFinalText() {
+        //default implementation
+        return "";
+    }
 
     /**
      * append an end marker after generating the element attribute (e.g. ">\n" in XML)
      * @param data associated DataStructureElement
      * @param indentationLevel recursion depth for indentation (e.g. used in Json)
      */
-    protected abstract void generateEndOfParentAttribute(DataStructureElement data, int indentationLevel);
+    protected void generateEndOfParentAttribute(ParentElement data, int indentationLevel) {
+        // default does nothing - as in GenericGenerator
+    }
 
     /**
      * get String for a key:value line of an attribute in the appropriate format
@@ -78,7 +101,21 @@ public abstract class Generator {
      * @param value attribute element's value in quotes
      */
     protected String getAttributesElementString(String attribute, String value) {
+        //default implementation as used in GenericGenerator
         return String.format(" %s = \"%s\"", attribute, value);
+    }
+
+    /**
+     * hook-method for Json-(or other) Generator to implement special array generation logic.
+     * The method must return false (as in this default implementation), if normal list generation
+     * should be performed instead.
+     * @param parent parent element
+     * @return true if array generation has been performed - nothing else is generated in this case
+     *          or false if normal generation should be performed
+     */
+    protected boolean generateArray(ParentElement parent, int indentationLevel) {
+        //default implementation - only Json-Generator uses an array abbreviation format (so far)
+        return false;
     }
 
     /**
@@ -86,7 +123,7 @@ public abstract class Generator {
      * @param data associated DataStructureElement
      * @param indentationLevel recursion depth for indentation (e.g. used in Json)
      */
-    protected abstract void generateEndOfParent(DataStructureElement data, int indentationLevel);
+    protected abstract void generateEndOfParent(ParentElement data, int indentationLevel);
 
     /** only for LeafElements, the value string is appended by this method hook in the format
      * @param data associated LeafElement
