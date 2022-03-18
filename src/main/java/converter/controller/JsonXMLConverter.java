@@ -25,14 +25,17 @@ public class JsonXMLConverter {
      */
     public void run(String[] clArgs) {
 
-        String userInput = scannerUI.getUserInputFromFile(clArgs[1]).trim();
-        //String userInput = scannerUI.getUserInput("Enter XML or Json to convert (one line):").trim();
         String output;
+        if (clArgs.length == 0) {
+            output = "Start with command line arguments <mode> <filepath> !";
+        } else {
+            String userInput = scannerUI.getUserInputFromFile(clArgs[1]).trim();
 
-        try {
-            output = convertInput(userInput, Integer.parseInt(clArgs[0]));
-        } catch (JsonXMLParseException e) {
-            output = "Json-XML-Parse-Error - Illegal format:\n" + e.getMessage();
+            try {
+                output = convertInput(userInput, Integer.parseInt(clArgs[0]));
+            } catch (JsonXMLParseException e) {
+                output = "Json-XML-Parse-Error - Illegal format:\n" + e.getMessage();
+            }
         }
         printerUI.print(output);
     }
@@ -44,7 +47,7 @@ public class JsonXMLConverter {
      * @param mode Output-modus for Generator: 0 = Json<->XML 1 = Generic, 2 = XML, else = Json
      * @return the converted output
      */
-    String convertInput(String userInput, int mode) {
+    public String convertInput(String userInput, int mode) {
         if (userInput.isEmpty()) {
             throw new JsonXMLParseException("Empty input!");
         }
@@ -63,19 +66,12 @@ public class JsonXMLConverter {
     }
 
    private String generateOutput(DataStructureElement dataStructure, int mode, boolean parsedXML) {
-        switch (mode) {
-            case 0 -> {
-                return parsedXML ? jsonGenerator.generate(dataStructure) : xmlGenerator.generate(dataStructure);
-            }
-            case 1 -> {
-                return genericGenerator.generate(dataStructure);
-            }
-            case 2 -> {
-                return xmlGenerator.generate(dataStructure);
-            }
-            default -> {
-                return jsonGenerator.generate(dataStructure);
-            }
-        }
+
+        return switch (mode) {
+            case 0 -> parsedXML ? jsonGenerator.generate(dataStructure) : xmlGenerator.generate(dataStructure);
+            case 1 -> genericGenerator.generate(dataStructure);
+            case 2 -> xmlGenerator.generate(dataStructure);
+            default -> jsonGenerator.generate(dataStructure);
+        };
     }
 }

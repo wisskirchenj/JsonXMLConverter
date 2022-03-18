@@ -12,7 +12,6 @@ import java.util.regex.Pattern;
 public class JsonTokenizer extends Tokenizer {
 
     public JsonTokenizer(String text) {
-        super();
         tokenizeInput(text);
     }
 

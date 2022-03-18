@@ -1,0 +1,16 @@
+<?myxml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlang="en" lang="en">
+    <head>
+        <title>Title</title>
+    </head>
+    <body>
+        <array>1.12</array>
+        <array>true</array>
+        <array></array>
+        <array>
+            <object att="att value">object value</object>
+        </array>
+        <array> some Text ! </array>
+        <array/>
+    </body>
+</html>
