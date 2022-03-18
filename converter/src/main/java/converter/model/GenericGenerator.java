@@ -69,8 +69,8 @@ public class GenericGenerator extends Generator {
             builder.append(pathElement).append(", ");
         }
         builder.delete(builder.length() - 2, builder.length()).append("\n");
-        if (data instanceof LeafElement) {
-            generateValue((LeafElement) data);
+        if (data instanceof LeafElement leafElement) {
+            generateValue(leafElement);
         }
         if (data.getAttributeElements() != null) {
             generateAttributeElements(data.getAttributeElements());

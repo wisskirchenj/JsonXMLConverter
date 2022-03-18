@@ -135,7 +135,8 @@ public class JsonParser {
         LeafElement leafElement = new LeafElement(matcher.group(1), null);
         Tokenizer tokenizer = new JsonTokenizer(matcher.group(2));
         if (parseListForAttributes(leafElement, tokenizer)) {
-            leafElement.setValue(parseTokenForLeafElement(tokenizer.asList().get(0)).getValue());
+            Optional<LeafElement> leaf = Optional.ofNullable(parseTokenForLeafElement(tokenizer.asList().get(0)));
+            leafElement.setValue(leaf.orElseThrow().getValue());
             return leafElement;
         }
         return null;
@@ -240,12 +241,12 @@ public class JsonParser {
                 }
             }
         }
-        if (valueToken.contains("{")) {
+        if (valueToken != null && valueToken.contains("{")) {
             tokensList.addAll(new JsonTokenizer(valueToken
                     .substring(valueToken.indexOf('{')+1, valueToken.lastIndexOf('}')).trim()).asList());
             return false;
         }
-        tokensList.set(0, "\"" + valueToken.substring(2));
+        tokensList.set(0, "\"" + (valueToken!= null ? valueToken.substring(2) : ""));
         return true;
     }
 

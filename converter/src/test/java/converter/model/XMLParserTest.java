@@ -1,5 +1,6 @@
 package converter.model;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -13,7 +14,7 @@ class XMLParserTest {
     @Test
     void parseUnpaired() {
         input = "<tag/>";
-        assertDoesNotThrow(() -> new XMLParser().parse(input));
+        Assertions.assertDoesNotThrow(() -> new XMLParser().parse(input));
         parsedElement = new XMLParser().parse(input);
         assertEquals("tag", parsedElement.getAttribute());
         assertNull(parsedElement.getValue());
@@ -23,7 +24,8 @@ class XMLParserTest {
     @Test
     void parseInvalidFormat() {
         input = "<tag>sth</teg>";
-        exception = assertThrows(JsonXMLParseException.class, () -> new XMLParser().parse(input));
+        XMLParser xmlParser = new XMLParser();
+        exception = assertThrows(JsonXMLParseException.class, () -> xmlParser.parse(input));
         assertEquals("XML parser: invalid format found!", exception.getMessage());
     }
 
@@ -67,7 +69,7 @@ class XMLParserTest {
     @Test
     void parsePaired() {
         input = "<tag>te\"xt</tag>";
-        assertDoesNotThrow(() -> new XMLParser().parse(input));
+        Assertions.assertDoesNotThrow(() -> new XMLParser().parse(input));
         parsedElement = new XMLParser().parse(input);
         assertEquals("tag", parsedElement.getAttribute());
         assertEquals("te\"xt", parsedElement.getValue());
@@ -77,7 +79,7 @@ class XMLParserTest {
     @Test
     void parseEmptyPaired() {
         input = "<tag></tag>";
-        assertDoesNotThrow(() -> new XMLParser().parse(input));
+        Assertions.assertDoesNotThrow(() -> new XMLParser().parse(input));
         parsedElement = new XMLParser().parse(input);
         assertEquals("tag", parsedElement.getAttribute());
         assertEquals("", parsedElement.getValue());
@@ -88,7 +90,7 @@ class XMLParserTest {
     @Test
     void parsePairedWithAttributes() {
         input = "<tag att1=\"val1\" att2=\"val2\" > te\"xt </tag>";
-        assertDoesNotThrow(() -> new XMLParser().parse(input));
+        Assertions.assertDoesNotThrow(() -> new XMLParser().parse(input));
         parsedElement = new XMLParser().parse(input);
         assertEquals("tag", parsedElement.getAttribute());
         assertEquals(" te\"xt ", parsedElement.getValue());
@@ -103,7 +105,7 @@ class XMLParserTest {
     @Test
     void parsePairedWithSingleQuoteAttributes() {
         input = "<tag att1='val1' att2=\"val2\" > te\"xt </tag>";
-        assertDoesNotThrow(() -> new XMLParser().parse(input));
+        Assertions.assertDoesNotThrow(() -> new XMLParser().parse(input));
         parsedElement = new XMLParser().parse(input);
         assertEquals("tag", parsedElement.getAttribute());
         assertEquals(" te\"xt ", parsedElement.getValue());
@@ -117,7 +119,7 @@ class XMLParserTest {
     @Test
     void parseEmptyPairedWithAttributes() {
         input = "<tag att1=\"val1\" att2=\"val2\" />";
-        assertDoesNotThrow(() -> new XMLParser().parse(input));
+        Assertions.assertDoesNotThrow(() -> new XMLParser().parse(input));
         parsedElement = new XMLParser().parse(input);
         assertEquals("tag", parsedElement.getAttribute());
         assertNull(parsedElement.getValue());

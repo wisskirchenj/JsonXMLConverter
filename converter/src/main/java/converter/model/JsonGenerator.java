@@ -58,7 +58,7 @@ public class JsonGenerator extends Generator {
     }
 
     private void generateAttributes(DataStructureElement data, int indentationLevel, boolean isArrayElement) {
-        builder.append(INDENT.repeat(indentationLevel));
+        builder.append(indent.repeat(indentationLevel));
         if (!isArrayElement) {
             builder.append(String.format("\"%s\": ", data.getAttribute()));
         }
@@ -67,7 +67,7 @@ public class JsonGenerator extends Generator {
         }
         builder.append("{\n");
         for (LeafElement element : data.getAttributeElements()) {
-            builder.append(INDENT.repeat(indentationLevel + 1))
+            builder.append(indent.repeat(indentationLevel + 1))
                     .append(String.format("\"%s%s\": ", "@", element.getAttribute()));
             builder.append(getLeafValueString(element.getValue()));
         }
@@ -77,8 +77,8 @@ public class JsonGenerator extends Generator {
     protected void generateEndOfParentAttribute(ParentElement data, int indentationLevel) {
         char endChar = matchesJsonArray(data.getValue()) ? '[' : '{';
         if (data.getAttributeElements() != null) {
-            builder.append(INDENT.repeat(indentationLevel + 1))
-                    .append(String.format("\"%s%s\": %c\n", "#", data.getAttribute(), endChar));
+            builder.append(indent.repeat(indentationLevel + 1))
+                    .append(String.format("\"%s%s\": %c%n", "#", data.getAttribute(), endChar));
         } else {
             builder.append(endChar).append("\n");
         }
@@ -89,10 +89,10 @@ public class JsonGenerator extends Generator {
         builder.deleteCharAt(builder.lastIndexOf(",")); // remove last ','
         char endChar = matchesJsonArray(data.getValue()) ? ']' : '}';
         if (data.getAttributeElements() != null) {
-            builder.append(INDENT.repeat(indentationLevel + 1)).append(endChar).append("\n");
-            builder.append(INDENT.repeat(indentationLevel)).append("},\n");
+            builder.append(indent.repeat(indentationLevel + 1)).append(endChar).append("\n");
+            builder.append(indent.repeat(indentationLevel)).append("},\n");
         } else {
-            builder.append(INDENT.repeat(indentationLevel)).append(endChar).append(",\n");
+            builder.append(indent.repeat(indentationLevel)).append(endChar).append(",\n");
         }
     }
 
@@ -111,11 +111,11 @@ public class JsonGenerator extends Generator {
         if (data.getAttributeElements() == null) {
             builder.append(getLeafValueString(data.getValue()));
         } else {
-            builder.append(INDENT.repeat(indentationLevel + 1))
+            builder.append(indent.repeat(indentationLevel + 1))
                     .append(String.format("\"%s%s\": ", "#", data.getAttribute()));
             builder.append(getLeafValueString(data.getValue()));
             builder.deleteCharAt(builder.lastIndexOf(",")); // remove last ','
-            builder.append(INDENT.repeat(indentationLevel)).append("},\n");
+            builder.append(indent.repeat(indentationLevel)).append("},\n");
         }
     }
 
@@ -127,21 +127,22 @@ public class JsonGenerator extends Generator {
      * @return true if array generation has been performed - nothing else is generated in this case
      *          or false if normal generation should be performed
      */
+    @Override
     protected boolean generateArray(ParentElement parent, int indentationLevel) {
         if (!matchesJsonArray(parent.getValue())) {
             return false;
         }
         for (DataStructureElement entry : parent.getValue()) {
             generateAttributes(entry, indentationLevel + 1 + getExtraIndent(parent), true);
-            if (entry instanceof LeafElement) {
-                generateLeafValue((LeafElement) entry, indentationLevel + 1 + getExtraIndent(parent));
+            if (entry instanceof LeafElement leafElement) {
+                generateLeafValue(leafElement, indentationLevel + 1 + getExtraIndent(parent));
             } else {
                 builder.append("{\n");
                 //recursive call over array elements
                 ((ParentElement) entry).getValue().forEach(data -> recursiveGenerate(data,
                         indentationLevel + 2 + getExtraIndent(parent)));
                 builder.deleteCharAt(builder.lastIndexOf(",")); // remove last ','
-                builder.append(INDENT.repeat(indentationLevel + 1 + getExtraIndent(parent))).append("},\n");
+                builder.append(indent.repeat(indentationLevel + 1 + getExtraIndent(parent))).append("},\n");
             }
         }
         return true;

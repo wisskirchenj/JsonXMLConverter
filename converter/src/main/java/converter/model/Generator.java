@@ -6,7 +6,7 @@ package converter.model;
  */
 public abstract class Generator {
 
-    protected String INDENT = "  ";
+    protected String indent = "  ";
     protected StringBuilder builder;
 
     /**
@@ -30,8 +30,8 @@ public abstract class Generator {
     protected void recursiveGenerate(DataStructureElement data, int indentationLevel) {
         generateAttributes(data, indentationLevel);
 
-        if (data instanceof LeafElement) {
-            generateLeafValue((LeafElement) data, indentationLevel);
+        if (data instanceof LeafElement leafElement) {
+            generateLeafValue(leafElement, indentationLevel);
             return;
         }
 

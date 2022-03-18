@@ -29,7 +29,8 @@ class JsonParserTest {
     @Test
     void parseInvalidFormat() {
         input = "{name:value}";
-        exception = assertThrows(JsonXMLParseException.class, () -> new JsonParser().parse(input));
+        JsonParser jsonParser = new JsonParser();
+        exception = assertThrows(JsonXMLParseException.class, () -> jsonParser.parse(input));
         assertTrue(exception.getMessage().startsWith("Json-Parser: Invalid"));
     }
 
@@ -66,7 +67,8 @@ class JsonParserTest {
     @Test
     void parseInvalidValue() {
         input = "{\"name\":{ \"@att1\":\"val1\", \"#name\":1,}";
-        exception = assertThrows(JsonXMLParseException.class, () -> new JsonParser().parse(input));
+        JsonParser jsonParser = new JsonParser();
+        exception = assertThrows(JsonXMLParseException.class, () -> jsonParser.parse(input));
         assertTrue(exception.getMessage().startsWith("Json-Parser: Invalid"));
     }
 

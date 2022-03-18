@@ -1,6 +1,9 @@
 package converter.controller;
 
-import converter.model.*;
+import converter.model.DataStructureElement;
+import converter.model.JsonGenerator;
+import converter.model.JsonXMLParseException;
+import converter.model.XMLGenerator;
 import converter.view.PrinterUI;
 import converter.view.ScannerUI;
 import org.junit.jupiter.api.BeforeEach;
@@ -8,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.stubbing.Answer;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;

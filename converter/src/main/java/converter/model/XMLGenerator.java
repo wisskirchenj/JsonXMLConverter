@@ -22,13 +22,13 @@ public class XMLGenerator extends Generator {
 
     @Override
     protected void generateEndOfParent(ParentElement data, int indentationLevel) {
-        builder.append(INDENT.repeat(indentationLevel))
+        builder.append(indent.repeat(indentationLevel))
                 .append(String.format("</%s>%n", data.getAttribute()));
     }
 
     @Override
     protected void generateAttributes(DataStructureElement data, int indentationLevel) {
-        builder.append(INDENT.repeat(indentationLevel)).append(String.format("<%s", data.getAttribute()));
+        builder.append(indent.repeat(indentationLevel)).append(String.format("<%s", data.getAttribute()));
         if (data.getAttributeElements() != null) {
             for (LeafElement element : data.getAttributeElements()) {
                 builder.append(getAttributesElementString(element.getAttribute(), element.getValue()));
