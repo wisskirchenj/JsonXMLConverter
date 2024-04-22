@@ -28,15 +28,15 @@ public class JsonTokenizer extends Tokenizer {
         if (!matcher.find()) {
             return text;
         }
+        int pos = matcher.start();
         // next separator is a comma ? -> then use it
-        if (text.charAt(matcher.start()) == ',') {
-            return text.substring(0, matcher.start());
+        if (text.charAt(pos) == ',') {
+            return text.substring(0, pos);
         }
         // else we have to count until brace closes
-        char open = text.charAt(matcher.start()) == '{' ? '{' : '[';
+        char open = text.charAt(pos);
         char close = open == '{' ? '}' : ']';
 
-        int pos = matcher.start();
         int depth = 1;
         while (++pos < text.length() && depth > 0) {
             if (text.charAt(pos) == open) {
@@ -62,20 +62,37 @@ public class JsonTokenizer extends Tokenizer {
      * were a standard Json child element's list.
      */
     @Override
+    // This code parses an array token into a JSON object. For example, the
+    // token "[ 1, 2, 3 ]" is parsed into the object "{ element: 1, element: 2,
+    // element: 3 }".
+
     protected String modifyArrayToken(String arrayToken) {
+        // If the array is empty, return an empty string.
         if (arrayToken.matches("(?s)\\[\\s*]")) {
             return "\"\"";
         }
+
+        // Create a StringBuilder to accumulate the JSON object.
         StringBuilder builder = new StringBuilder("{ ");
+
+        // Parse the array token into elements.
         int position = 1;
         String elementToken;
         do {
+            // Get the next element token.
             elementToken = getNextToken(arrayToken.substring(position, arrayToken.length() - 1));
+
+            // Update the position in the array token.
             position += elementToken.length() + 1;
 
+            // Append the element token to the JSON object.
             builder.append("\"element\": ").append(elementToken).append(",\n");
         } while (position < arrayToken.length() - 1);
+
+        // Finish the JSON object.
         builder.append("}");
+
+        // Return the JSON object.
         return builder.toString();
     }
 
